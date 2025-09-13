@@ -1,14 +1,23 @@
-// src/app/pages/auth/Register.jsx
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import Button from '../../components/Button.jsx';
 import { isValidEmail } from '../../utils/format.js';
+import { 
+  EyeIcon, 
+  EyeSlashIcon, 
+  EnvelopeIcon, 
+  LockClosedIcon,
+  CheckCircleIcon,
+  ShieldCheckIcon
+} from 'lucide-react';
 
 export default function Register() {
   const [formData, setFormData] = useState({ email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -48,7 +57,6 @@ export default function Register() {
     if (result.success) {
       navigate('/', { replace: true });
     } else {
-      // map field error (from Zod) if provided
       if (result.field) {
         setErrors((prev) => ({ ...prev, [result.field]: result.error }));
       } else {
@@ -59,155 +67,140 @@ export default function Register() {
   };
 
   return (
-    <div>
-      <div className="text-center mb-6">
-        <h2 style={{ 
-          fontSize: 'var(--font-size-2xl)', 
-          fontWeight: 'var(--font-weight-bold)',
-          color: 'var(--color-text)',
-          marginBottom: 'var(--spacing-sm)'
-        }}>
-          Create Account
-        </h2>
-        <p style={{ 
-          color: 'var(--color-text-muted)', 
-          fontSize: 'var(--font-size-base)',
-          margin: 0
-        }}>
-          Join Sentinel to secure your content
-        </p>
+    <div className="animate-fade-in">
+      <div className="mb-8 text-center">
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Create Account</h2>
+        <p className="text-gray-600">Join Sentinel to secure your content</p>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="email" className="form-label">Email Address</label>
-          <input
-            type="email" id="email" name="email"
-            value={formData.email} onChange={handleChange}
-            className="form-input" placeholder="Enter your email address"
-            disabled={isLoading}
-          />
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="email" className="form-label">
+            Email Address
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <EnvelopeIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              className={`form-input pl-10 ${errors.email ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="Enter your email address"
+              disabled={isLoading}
+            />
+          </div>
           {errors.email && <div className="form-error">{errors.email}</div>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="password" className="form-label">Password</label>
-          <input
-            type="password" id="password" name="password"
-            value={formData.password} onChange={handleChange}
-            className="form-input" placeholder="Create a strong password (min. 8 characters)"
-            disabled={isLoading}
-          />
+        <div>
+          <label htmlFor="password" className="form-label">
+            Password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <LockClosedIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type={showPassword ? 'text' : 'password'}
+              id="password"
+              name="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`form-input pl-10 pr-10 ${errors.password ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="Create a strong password (min. 8 characters)"
+              disabled={isLoading}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? (
+                <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              ) : (
+                <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              )}
+            </button>
+          </div>
           {errors.password && <div className="form-error">{errors.password}</div>}
         </div>
 
-        <div className="form-group">
-          <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-          <input
-            type="password" id="confirmPassword" name="confirmPassword"
-            value={formData.confirmPassword} onChange={handleChange}
-            className="form-input" placeholder="Confirm your password"
-            disabled={isLoading}
-          />
+        <div>
+          <label htmlFor="confirmPassword" className="form-label">
+            Confirm Password
+          </label>
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <LockClosedIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input
+              type={showConfirmPassword ? 'text' : 'password'}
+              id="confirmPassword"
+              name="confirmPassword"
+              value={formData.confirmPassword}
+              onChange={handleChange}
+              className={`form-input pl-10 pr-10 ${errors.confirmPassword ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : ''}`}
+              placeholder="Confirm your password"
+              disabled={isLoading}
+            />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            >
+              {showConfirmPassword ? (
+                <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              ) : (
+                <EyeIcon className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+              )}
+            </button>
+          </div>
           {errors.confirmPassword && <div className="form-error">{errors.confirmPassword}</div>}
         </div>
 
-        {errors.submit && <div className="form-error mb-4">{errors.submit}</div>}
+        {errors.submit && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="text-sm text-red-600">{errors.submit}</div>
+          </div>
+        )}
 
         <Button 
           type="submit" 
-          className="btn-primary btn-lg" 
-          style={{ 
-            width: '100%', 
-            marginTop: 'var(--spacing-lg)',
-            fontSize: 'var(--font-size-lg)',
-            padding: 'var(--spacing-lg) var(--spacing-xl)'
-          }} 
+          size="lg"
+          className="w-full"
+          loading={isLoading}
           disabled={isLoading}
         >
-          {isLoading ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
-              <div style={{
-                width: '16px',
-                height: '16px',
-                border: '2px solid rgba(255,255,255,0.3)',
-                borderTop: '2px solid white',
-                borderRadius: '50%',
-                animation: 'spin 1s linear infinite'
-              }} />
-              Creating Account...
-            </div>
-          ) : (
-            'Create Account'
-          )}
+          {isLoading ? 'Creating Account...' : 'Create Account'}
         </Button>
       </form>
 
-      <div className="text-center mt-6">
-        <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--spacing-md)' }}>
+      <div className="mt-8 text-center">
+        <p className="text-gray-600">
           Already have an account?{' '}
           <Link 
             to="/login" 
-            style={{ 
-              color: 'var(--color-primary)', 
-              textDecoration: 'none',
-              fontWeight: 'var(--font-weight-medium)',
-              transition: 'color 0.2s ease'
-            }}
-            onMouseEnter={(e) => e.target.style.color = 'var(--color-primary-hover)'}
-            onMouseLeave={(e) => e.target.style.color = 'var(--color-primary)'}
+            className="font-medium text-primary-600 hover:text-primary-500 transition-colors"
           >
             Sign in here
           </Link>
         </p>
 
-        {/* Security features highlight */}
-        <div style={{
-          background: 'var(--color-surface)',
-          border: '1px solid var(--color-border-light)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--spacing-lg)',
-          marginTop: 'var(--spacing-lg)'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 'var(--spacing-sm)',
-            marginBottom: 'var(--spacing-sm)'
-          }}>
-            <div style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: '50%',
-              background: 'var(--color-success-light)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '12px'
-            }}>
-              🔒
-            </div>
-            <strong style={{ color: 'var(--color-text)', fontSize: 'var(--font-size-sm)' }}>
-              Secure & Private
-            </strong>
+        {/* Security features */}
+        <div className="mt-6 bg-green-50 border border-green-200 rounded-lg p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <ShieldCheckIcon className="w-5 h-5 text-green-600" />
+            <span className="text-sm font-medium text-green-800">Secure & Private</span>
           </div>
-          <p style={{ 
-            color: 'var(--color-text-muted)', 
-            fontSize: 'var(--font-size-sm)',
-            margin: 0,
-            lineHeight: 'var(--line-height-relaxed)'
-          }}>
+          <p className="text-sm text-green-700">
             Your data is encrypted and protected. We never share your information with third parties.
           </p>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes spin {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-      `}</style>
     </div>
   );
 }

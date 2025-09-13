@@ -1,19 +1,42 @@
+import { SignalIcon, ExclamationTriangleIcon } from 'lucide-react'
+
 export default function SSEStatusPill({ status }) {
-  const getStatusProps = () => {
+  const getStatusConfig = () => {
     switch (status) {
       case 'connected':
-        return { className: 'badge badge-connected', text: 'Connected' }
+        return { 
+          className: 'badge-success', 
+          text: 'Connected',
+          icon: SignalIcon
+        }
       case 'reconnecting':
-        return { className: 'badge badge-warning', text: 'Reconnecting...' }
+        return { 
+          className: 'badge-warning', 
+          text: 'Reconnecting...',
+          icon: ExclamationTriangleIcon
+        }
       case 'error':
       case 'disconnected':
-        return { className: 'badge badge-error', text: 'Disconnected' }
+        return { 
+          className: 'badge-danger', 
+          text: 'Disconnected',
+          icon: ExclamationTriangleIcon
+        }
       default:
-        return { className: 'badge', text: 'Unknown' }
+        return { 
+          className: 'badge bg-gray-100 text-gray-800', 
+          text: 'Unknown',
+          icon: ExclamationTriangleIcon
+        }
     }
   }
 
-  const { className, text } = getStatusProps()
+  const { className, text, icon: Icon } = getStatusConfig()
 
-  return <span className={className}>{text}</span>
+  return (
+    <span className={`badge ${className} flex items-center gap-1`}>
+      <Icon className="w-3 h-3" />
+      {text}
+    </span>
+  )
 }

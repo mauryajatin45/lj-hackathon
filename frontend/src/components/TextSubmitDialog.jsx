@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Modal from './Modal.jsx'
 import Button from './Button.jsx'
+import { DocumentTextIcon, UserIcon, AtSymbolIcon } from 'lucide-react'
 
 export default function TextSubmitDialog({ isOpen, onClose, onSubmit }) {
   const [formData, setFormData] = useState({
@@ -71,6 +72,7 @@ export default function TextSubmitDialog({ isOpen, onClose, onSubmit }) {
       isOpen={isOpen}
       onClose={handleClose}
       title="Submit SMS/Email Text"
+      size="lg"
       footer={
         <>
           <Button 
@@ -83,19 +85,28 @@ export default function TextSubmitDialog({ isOpen, onClose, onSubmit }) {
           <Button 
             type="submit" 
             form="text-submit-form"
+            loading={isSubmitting}
             disabled={isSubmitting}
           >
-            {isSubmitting ? 'Submitting...' : 'Submit for Analysis'}
+            Submit for Analysis
           </Button>
         </>
       }
     >
-      <p className="text-muted mb-3">
-        Paste the SMS/Email content. We'll check for scam indicators.
-      </p>
+      <div className="mb-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+            <DocumentTextIcon className="w-5 h-5 text-blue-600" />
+          </div>
+          <div>
+            <h4 className="font-medium text-gray-900">Text Content Analysis</h4>
+            <p className="text-sm text-gray-500">Paste the SMS/Email content to check for scam indicators</p>
+          </div>
+        </div>
+      </div>
 
-      <form id="text-submit-form" onSubmit={handleSubmit}>
-        <div className="form-group">
+      <form id="text-submit-form" onSubmit={handleSubmit} className="space-y-6">
+        <div>
           <label className="form-label" htmlFor="channel">
             Channel *
           </label>
@@ -113,7 +124,7 @@ export default function TextSubmitDialog({ isOpen, onClose, onSubmit }) {
           </select>
         </div>
 
-        <div className="form-group">
+        <div>
           <label className="form-label" htmlFor="content">
             Content *
           </label>
@@ -127,47 +138,60 @@ export default function TextSubmitDialog({ isOpen, onClose, onSubmit }) {
             rows={6}
             required
           />
+          <p className="mt-2 text-sm text-gray-500">
+            {formData.content.length}/2000 characters
+          </p>
         </div>
 
         {formData.channel === 'email' && (
-          <div className="form-group">
+          <div>
             <label className="form-label" htmlFor="subject">
               Subject
             </label>
-            <input 
-              type="text"
-              id="subject"
-              name="subject"
-              value={formData.subject}
-              onChange={handleChange}
-              placeholder="Email subject line"
-              className="form-input"
-            />
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <AtSymbolIcon className="h-5 w-5 text-gray-400" />
+              </div>
+              <input 
+                type="text"
+                id="subject"
+                name="subject"
+                value={formData.subject}
+                onChange={handleChange}
+                placeholder="Email subject line"
+                className="form-input pl-10"
+              />
+            </div>
           </div>
         )}
 
-        <div className="form-group">
+        <div>
           <label className="form-label" htmlFor="sender">
             Sender
           </label>
-          <input 
-            type="text"
-            id="sender"
-            name="sender"
-            value={formData.sender}
-            onChange={handleChange}
-            placeholder={
-              formData.channel === 'email' ? 'sender@example.com' :
-              formData.channel === 'sms' ? '+1234567890' :
-              'Username or display name'
-            }
-            className="form-input"
-          />
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <UserIcon className="h-5 w-5 text-gray-400" />
+            </div>
+            <input 
+              type="text"
+              id="sender"
+              name="sender"
+              value={formData.sender}
+              onChange={handleChange}
+              placeholder={
+                formData.channel === 'email' ? 'sender@example.com' :
+                formData.channel === 'sms' ? '+1234567890' :
+                'Username or display name'
+              }
+              className="form-input pl-10"
+            />
+          </div>
         </div>
 
         {error && (
-          <div className="form-error">
-            {error}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div className="text-sm text-red-600">{error}</div>
           </div>
         )}
       </form>

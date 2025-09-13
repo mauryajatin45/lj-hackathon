@@ -19,14 +19,15 @@ export default function AppLayout() {
 
   return (
     <ToastContext.Provider value={toast}>
-      <div className="app-layout">
+      <div className="flex h-screen bg-gray-50">
         <Sidebar />
-        <div className="main-content">
+        <div className="flex-1 flex flex-col overflow-hidden">
           <TopBar />
-          <div className="content">
-            {/* Nested route content renders here */}
-            <Outlet />
-          </div>
+          <main className="flex-1 overflow-y-auto">
+            <div className="p-6">
+              <Outlet />
+            </div>
+          </main>
         </div>
         <ToastContainer
           toasts={toast.toasts}
