@@ -19,9 +19,24 @@ const IconSettings = (props) => (
 )
 
 const NAV = [
-  { path: '/', label: 'Dashboard', Icon: IconDashboard },
-  { path: '/history', label: 'History', Icon: IconHistory },
-  { path: '/settings', label: 'Settings', Icon: IconSettings }
+  { 
+    path: '/', 
+    label: 'Dashboard', 
+    Icon: IconDashboard,
+    description: 'Overview and analytics'
+  },
+  { 
+    path: '/history', 
+    label: 'History', 
+    Icon: IconHistory,
+    description: 'View past submissions'
+  },
+  { 
+    path: '/settings', 
+    label: 'Settings', 
+    Icon: IconSettings,
+    description: 'Account preferences'
+  }
 ]
 
 const cx = (...a) => a.filter(Boolean).join(' ')

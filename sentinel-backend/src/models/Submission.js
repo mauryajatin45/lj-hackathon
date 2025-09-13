@@ -40,6 +40,14 @@ const submissionSchema = new mongoose.Schema({
     maxlength: 2000,
     trim: true
   },
+  sender: {
+    type: String,
+    trim: true
+  },
+  subject: {
+    type: String,
+    trim: true
+  },
   attachments: [attachmentSchema],
   status: {
     type: String,
@@ -52,6 +60,17 @@ const submissionSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
+
+// Virtual populate for report
+submissionSchema.virtual('report', {
+  ref: 'Report',
+  localField: '_id',
+  foreignField: 'submissionId',
+  justOne: true
+});
+
+submissionSchema.set('toObject', { virtuals: true });
+submissionSchema.set('toJSON', { virtuals: true });
 
 // Indexes
 submissionSchema.index({ userId: 1, createdAt: -1 });

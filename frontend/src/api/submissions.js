@@ -11,13 +11,11 @@ export async function submitFile(file, type) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('type', type)
-  
+
   return apiRequest('/submissions/file', {
     method: 'POST',
-    body: formData,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    }
+    body: formData
+    // Removed explicit 'Content-Type' header to let browser set it automatically
   })
 }
 

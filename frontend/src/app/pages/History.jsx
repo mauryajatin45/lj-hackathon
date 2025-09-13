@@ -6,6 +6,7 @@ import Button from '../../components/Button.jsx'
 import Table from '../../components/Table.jsx'
 import RiskBadge from '../../components/RiskBadge.jsx'
 import TimestampChips from '../../components/TimestampChips.jsx'
+import SubmissionDetailsDialog from '../../components/SubmissionDetailsDialog.jsx'
 import { getSubmissions } from '../../api/submissions.js'
 import { formatDate, truncateText } from '../../utils/format.js'
 
@@ -22,6 +23,8 @@ export default function History() {
     from: '',
     to: ''
   })
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState(null)
 
   const itemsPerPage = 20
 
@@ -46,8 +49,8 @@ export default function History() {
       })
 
       const result = await getSubmissions(params)
-      setSubmissions(result.items || [])
-      setTotalCount(result.total || 0)
+      setSubmissions(result.submissions || [])
+      setTotalCount(result.pagination?.total || 0)
     } catch (error) {
       console.error('Failed to load submissions:', error)
       toast.error('Failed to load submissions')
@@ -118,7 +121,7 @@ export default function History() {
       header: 'ID',
       render: (row) => (
         <div className="text-sm">
-          <div className="font-weight-500">#{row.id.slice(-8)}</div>
+          <div className="font-weight-500">#{(row.id || row._id || '').slice(-8)}</div>
           <div className="text-muted">{formatDate(row.createdAt)}</div>
         </div>
       )
@@ -190,6 +193,23 @@ export default function History() {
       key: 'report',
       header: 'Analysis Report',
       render: (row) => {
+        // Show status and lastError if present
+        if (row.status && row.status !== 'COMPLETED') {
+          return (
+            <div className="text-center">
+              <div className="text-sm text-muted">
+                {row.status === 'QUEUED' && '⏳ Queued for analysis'}
+                {row.status === 'UPLOADING' && '⬆️ Uploading...'}
+                {row.status === 'ERROR' && (
+                  <span style={{ color: 'var(--color-danger)' }}>
+                    ❌ Error: {row.lastError || 'Unknown error'}
+                  </span>
+                )}
+              </div>
+            </div>
+          )
+        }
+
         if (!row.report) {
           return (
             <div className="text-center">
@@ -238,27 +258,37 @@ export default function History() {
       header: 'Actions',
       render: (row) => (
         <div className="d-flex gap-1">
-          <Link 
-            to={`/submissions/${row.id}`}
+          <button
             className="text-sm"
-            style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-primary)',
+              cursor: 'pointer',
+              padding: 0,
+              textDecoration: 'underline'
+            }}
+            onClick={() => {
+              setSelectedSubmissionId(row.id || row._id)
+              setDialogOpen(true)
+            }}
           >
             View
-          </Link>
+          </button>
           <span className="text-muted">•</span>
-          <button 
+          <button
             className="text-sm"
-            style={{ 
-              background: 'none', 
-              border: 'none', 
-              color: 'var(--color-primary)', 
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-primary)',
               cursor: 'pointer',
               padding: 0
             }}
             onClick={() => {
               if (row.report) {
                 navigator.clipboard.writeText(
-                  `Submission #${row.id}\n` +
+                  `Submission #${row._id}\n` +
                   `Risk: ${(row.report.riskScore * 100).toFixed(0)}%\n` +
                   `Suspicious: ${row.report.suspicious ? 'Yes' : 'No'}\n` +
                   `Reasons: ${row.report.reasons?.join(', ') || 'None'}`
@@ -505,6 +535,16 @@ export default function History() {
           </div>
         )}
       </Card>
+
+      {/* Submission Details Dialog */}
+      <SubmissionDetailsDialog
+        isOpen={dialogOpen}
+        onClose={() => {
+          setDialogOpen(false)
+          setSelectedSubmissionId(null)
+        }}
+        submissionId={selectedSubmissionId}
+      />
     </div>
   )
 }
