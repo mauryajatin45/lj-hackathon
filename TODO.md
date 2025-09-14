@@ -8,6 +8,11 @@
 - [x] Add detectDeepfakeVideo method to AIService
 - [x] Modify analyzeFile to handle audio and video files with deepfake detection
 - [x] Update TODO.md with implementation tasks
+- [x] Implement audio deepfake detection with 2-minute timeout
+- [x] Frontend supports audio file selection and submission
+- [x] Backend handles audio file uploads and analysis
+- [x] SSE events properly handle audio analysis progress and results
+- [x] Error handling for timeout shows "AI failed to analyze" after 2 minutes
 
 ## Remaining Tasks
 - [ ] Test /process_document endpoint with Postman (form data: file_url, doc_title, doc_issuer, compact)

@@ -196,7 +196,7 @@ export default function Dashboard() {
               onToggle={setIsDropdownOpen}
               trigger={
                 <Button size="lg" className="btn-primary">
-                  📤 Add / Check Something Suspicious
+                   Add / Check Something Suspicious
                 </Button>
               }
             >
@@ -207,7 +207,7 @@ export default function Dashboard() {
                   setIsDropdownOpen(false)
                 }}
               >
-                📱 Submit SMS/Email text
+                Submit SMS/Email text
               </button>
               <button
                 className="dropdown-item"
@@ -216,7 +216,7 @@ export default function Dashboard() {
                   setIsDropdownOpen(false)
                 }}
               >
-                📎 Submit image, video, document, or audio
+              Submit image, video, document, or audio
               </button>
             </Dropdown>
           </div>

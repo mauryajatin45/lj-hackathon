@@ -184,11 +184,13 @@ frontend/
 - MongoDB
 - AWS S3 account and bucket
 - External AI/ML service endpoint
+- Python 3.8+ (for ML service)
 
 ### Backend Setup
 
 1. **Clone and navigate to backend directory:**
    ```bash
+   git checkout maincode
    cd sentinel-backend
    ```
 
@@ -218,9 +220,9 @@ frontend/
    mongod
    ```
 
-5. **Run the backend:**
+5. **Run the backend server:**
    ```bash
-   npm run dev
+   nodemon src/server.js
    ```
 
 ### Frontend Setup
@@ -235,12 +237,28 @@ frontend/
    npm install
    ```
 
-3. **Start development server:**
+3. **Start frontend development server:**
    ```bash
    npm run dev
    ```
 
 ### AI/ML Service Setup
+
+1. **Switch to ML branch:**
+   ```bash
+   git checkout ml-code
+   cd ai/ml
+   ```
+
+2. **Install Python dependencies:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the ML server:**
+   ```bash
+   uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+   ```
 
 Configure the external AI service endpoints:
 - Text spam detection: `POST /detect_spam`
@@ -250,7 +268,7 @@ Configure the external AI service endpoints:
 
 ## Usage
 
-1. **Access the application** at `http://localhost:3000`
+1. **Access the application** at `http://localhost:5173`
 2. **Register/Login** to create an account
 3. **Submit content** for analysis:
    - Click "Add / Check Something Suspicious"
@@ -292,4 +310,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - [ ] Integration with telecom providers for caller ID verification
 - [ ] Browser extension for real-time web content analysis
 - [ ] Multi-language support
-- [ ] Advanced reporting and analytics dashboard
