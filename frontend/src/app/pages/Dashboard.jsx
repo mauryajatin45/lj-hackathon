@@ -223,7 +223,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Live Updates */}
-        <Card title="Live Updates">
+        <Card title="Live Updates" style={{ width:'30vh' }}>
           <div className="d-flex align-items-center justify-content-between mb-3">
             <span className="text-muted">Real-time analysis updates</span>
             <SSEStatusPill status={sseStatus} />

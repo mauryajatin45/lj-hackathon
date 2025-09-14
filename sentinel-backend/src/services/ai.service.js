@@ -31,22 +31,44 @@ class AIService {
 
   async analyzeFile(submissionId, s3SignedUrl, mimeType, size, metadata = {}) {
     try {
-      const response = await this.processDocument(s3SignedUrl, `${metadata.channel || 'File'} Analysis`, null, true);
-
-      const confidenceScore = parseFloat(response.confidence_score);
+      let response;
+      let suspicious;
       let riskScore;
-      if (isNaN(confidenceScore)) {
-        riskScore = response.legitimate ? 0.2 : 0.8; // Default based on legitimate
+      let reasons;
+
+      if (metadata.channel === 'audio') {
+        // Use deepfake audio detection for audio files
+        response = await this.detectDeepfakeAudio(s3SignedUrl);
+        suspicious = response.is_deepfake;
+        riskScore = response.confidence;
+        reasons = response.explanation || [];
+      } else if (metadata.channel === 'video') {
+        // Use deepfake video detection for video files
+        response = await this.detectDeepfakeVideo(s3SignedUrl);
+        suspicious = response.is_deepfake;
+        riskScore = response.confidence;
+        reasons = response.explanation || [];
       } else {
-        // If legitimate, low risk; if not, high risk based on confidence
-        riskScore = response.legitimate ? (1 - confidenceScore) : confidenceScore;
-        riskScore = Math.max(0, Math.min(1, riskScore)); // Clamp between 0 and 1
+        // Use document processing for other file types
+        response = await this.processDocument(s3SignedUrl, `${metadata.channel || 'File'} Analysis`, null, true);
+
+        const confidenceScore = parseFloat(response.confidence_score);
+        if (isNaN(confidenceScore)) {
+          riskScore = response.legitimate ? 0.2 : 0.8; // Default based on legitimate
+        } else {
+          // If legitimate, low risk; if not, high risk based on confidence
+          riskScore = response.legitimate ? (1 - confidenceScore) : confidenceScore;
+          riskScore = Math.max(0, Math.min(1, riskScore)); // Clamp between 0 and 1
+        }
+
+        suspicious = !response.legitimate;
+        reasons = [];
       }
 
       return {
-        suspicious: !response.legitimate,
+        suspicious: suspicious,
         riskScore: riskScore,
-        reasons: [],
+        reasons: reasons,
         raw: response
       };
     } catch (error) {
@@ -104,6 +126,46 @@ class AIService {
     } catch (error) {
       logger.error('AI detect spam error:', error);
       throw new Error('Failed to detect spam with AI service');
+    }
+  }
+
+  async detectDeepfakeAudio(fileUrl) {
+    try {
+      const payload = {
+        file_url: fileUrl
+      };
+
+      const response = await axios.post(`${this.baseURL}/df/detect_deepfake_audio`, payload, {
+        timeout: 120000, // 2 minutes timeout
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      return response.data;
+    } catch (error) {
+      logger.error('AI detect deepfake audio error:', error);
+      throw new Error('Failed to detect deepfake audio with AI service');
+    }
+  }
+
+  async detectDeepfakeVideo(fileUrl) {
+    try {
+      const payload = {
+        file_url: fileUrl
+      };
+
+      const response = await axios.post(`${this.baseURL}/df/detect_deepfake_video`, payload, {
+        timeout: 120000, // 2 minutes timeout
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      return response.data;
+    } catch (error) {
+      logger.error('AI detect deepfake video error:', error);
+      throw new Error('Failed to detect deepfake video with AI service');
     }
   }
 }
