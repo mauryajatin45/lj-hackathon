@@ -178,8 +178,8 @@ export default function Dashboard() {
         <h1 className="page-title">Dashboard</h1>
       </div>
 
-      <div style={{ 
-        display: 'grid', 
+      <div style={{
+        display: 'grid',
         gap: 'var(--spacing-lg)',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
         marginBottom: 'var(--spacing-xl)',
@@ -190,8 +190,8 @@ export default function Dashboard() {
             <p className="text-muted mb-4">
               Submit suspicious content for automated security analysis
             </p>
-            
-            <Dropdown 
+
+            <Dropdown
               isOpen={isDropdownOpen}
               onToggle={setIsDropdownOpen}
               trigger={
@@ -200,7 +200,7 @@ export default function Dashboard() {
                 </Button>
               }
             >
-              <button 
+              <button
                 className="dropdown-item"
                 onClick={() => {
                   setTextDialogOpen(true)
@@ -209,7 +209,7 @@ export default function Dashboard() {
               >
                 📱 Submit SMS/Email text
               </button>
-              <button 
+              <button
                 className="dropdown-item"
                 onClick={() => {
                   setFileDialogOpen(true)
@@ -222,117 +222,125 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        {/* Live Updates */}
-        <Card title="Live Updates" style={{ width:'30vh' }}>
-          <div className="d-flex align-items-center justify-content-between mb-3">
-            <span className="text-muted">Real-time analysis updates</span>
-            <SSEStatusPill status={sseStatus} />
-          </div>
+        {/* Live Updates and Recent Reports - Equal Width */}
+        <div style={{
+          display: 'grid',
+          gap: 'var(--spacing-lg)',
+          gridTemplateColumns: '1fr 1fr',
+          gridColumn: '1 / -1'
+        }}>
+          {/* Live Updates */}
+          <Card title="Live Updates">
+            <div className="d-flex align-items-center justify-content-between mb-3">
+              <span className="text-muted">Real-time analysis updates</span>
+              <SSEStatusPill status={sseStatus} />
+            </div>
 
-          <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-            {liveUpdates.length === 0 ? (
+            <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+              {liveUpdates.length === 0 ? (
+                <p className="text-muted text-center">
+                  No recent updates. Submit content to see live analysis.
+                </p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
+                  {liveUpdates.map((update, index) => (
+                    <div
+                      key={`${update.submissionId}-${update.timestamp}-${index}`}
+                      style={{
+                        padding: 'var(--spacing-sm)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: 'var(--radius)',
+                        backgroundColor: update.error ? 'rgba(220, 38, 38, 0.05)' : 'var(--color-surface)'
+                      }}
+                    >
+                      <div className="d-flex justify-content-between align-items-start mb-1">
+                        <div className="text-sm">
+                          <strong>#{update.submissionId.slice(-8)}</strong>
+                        </div>
+                        <div className="text-sm text-muted">
+                          {formatDate(update.timestamp)}
+                        </div>
+                      </div>
+                      <div className="text-sm">
+                        {update.message}
+                        {update.riskScore !== undefined && (
+                          <div className="mt-1">
+                            <RiskBadge score={update.riskScore} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="mt-1">
+                        <Link
+                          to="/history"
+                          className="text-sm"
+                          style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
+                        >
+                          View in History →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </Card>
+
+          {/* Recent Reports */}
+          <Card title="Recent Reports">
+            {recentReports.length === 0 ? (
               <p className="text-muted text-center">
-                No recent updates. Submit content to see live analysis.
+                No reports yet. Submit content for analysis to see results here.
               </p>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)' }}>
-                {liveUpdates.map((update, index) => (
-                  <div 
-                    key={`${update.submissionId}-${update.timestamp}-${index}`}
-                    style={{ 
-                      padding: 'var(--spacing-sm)', 
-                      border: '1px solid var(--color-border)', 
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', maxHeight: '400px', overflowY: 'auto' }}>
+                {recentReports.map((report, index) => (
+                  <div
+                    key={`${report.id}-${index}`}
+                    style={{
+                      padding: 'var(--spacing-sm)',
+                      border: '1px solid var(--color-border)',
                       borderRadius: 'var(--radius)',
-                      backgroundColor: update.error ? 'rgba(220, 38, 38, 0.05)' : 'var(--color-surface)'
+                      backgroundColor: 'var(--color-surface)'
                     }}
                   >
-                    <div className="d-flex justify-content-between align-items-start mb-1">
+                    <div className="d-flex justify-content-between align-items-center mb-2">
                       <div className="text-sm">
-                        <strong>#{update.submissionId.slice(-8)}</strong>
+                        <strong>#{report.id.slice(-8)}</strong>
                       </div>
+                      <RiskBadge score={report.riskScore} />
+                    </div>
+                    <div className="text-sm mb-1">
+                      <strong>Suspicious:</strong> {report.suspicious ? 'Yes' : 'No'}
+                    </div>
+                    {report.reasons && report.reasons.length > 0 && (
                       <div className="text-sm text-muted">
-                        {formatDate(update.timestamp)}
+                        {report.reasons[0]}{report.reasons.length > 1 && ` (+${report.reasons.length - 1} more)`}
                       </div>
-                    </div>
-                    <div className="text-sm">
-                      {update.message}
-                      {update.riskScore !== undefined && (
-                        <div className="mt-1">
-                          <RiskBadge score={update.riskScore} />
-                        </div>
-                      )}
-                    </div>
-                    <div className="mt-1">
-                      <Link 
-                        to="/history" 
+                    )}
+                    <div className="mt-2">
+                      <Link
+                        to={`/submissions/${report.id}`}
                         className="text-sm"
                         style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
                       >
-                        View in History →
+                        View Details →
                       </Link>
                     </div>
                   </div>
                 ))}
               </div>
             )}
-          </div>
-        </Card>
 
-        {/* Recent Reports */}
-        <Card title="Recent Reports">
-          {recentReports.length === 0 ? (
-            <p className="text-muted text-center">
-              No reports yet. Submit content for analysis to see results here.
-            </p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-sm)', maxHeight: '400px', overflowY: 'auto' }}>
-              {recentReports.map((report, index) => (
-                <div 
-                  key={`${report.id}-${index}`}
-                  style={{ 
-                    padding: 'var(--spacing-sm)', 
-                    border: '1px solid var(--color-border)', 
-                    borderRadius: 'var(--radius)',
-                    backgroundColor: 'var(--color-surface)'
-                  }}
-                >
-                  <div className="d-flex justify-content-between align-items-center mb-2">
-                    <div className="text-sm">
-                      <strong>#{report.id.slice(-8)}</strong>
-                    </div>
-                    <RiskBadge score={report.riskScore} />
-                  </div>
-                  <div className="text-sm mb-1">
-                    <strong>Suspicious:</strong> {report.suspicious ? 'Yes' : 'No'}
-                  </div>
-                  {report.reasons && report.reasons.length > 0 && (
-                    <div className="text-sm text-muted">
-                      {report.reasons[0]}{report.reasons.length > 1 && ` (+${report.reasons.length - 1} more)`}
-                    </div>
-                  )}
-                  <div className="mt-2">
-                    <Link 
-                      to={`/submissions/${report.id}`}
-                      className="text-sm"
-                      style={{ color: 'var(--color-primary)', textDecoration: 'none' }}
-                    >
-                      View Details →
-                    </Link>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-3 text-center">
+              <Link
+                to="/history"
+                className="btn btn-secondary btn-sm"
+              >
+                📚 View Complete History ({recentReports.length > 0 ? 'All Submissions' : 'Get Started'})
+              </Link>
             </div>
-          )}
-          
-          <div className="mt-3 text-center">
-            <Link 
-              to="/history" 
-              className="btn btn-secondary btn-sm"
-            >
-              📚 View Complete History ({recentReports.length > 0 ? 'All Submissions' : 'Get Started'})
-            </Link>
-          </div>
-        </Card>
+          </Card>
+        </div>
       </div>
 
       {/* Dialogs */}
