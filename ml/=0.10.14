@@ -1,0 +1,34 @@
+Requirement already satisfied: mediapipe in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (0.10.21)
+Requirement already satisfied: absl-py in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (2.1.0)
+Requirement already satisfied: attrs>=19.1.0 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (25.1.0)
+Requirement already satisfied: flatbuffers>=2.0 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (25.1.24)
+Requirement already satisfied: jax in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (0.5.0)
+Requirement already satisfied: jaxlib in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (0.5.0)
+Requirement already satisfied: matplotlib in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (3.10.0)
+Requirement already satisfied: numpy<2 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (1.26.4)
+Requirement already satisfied: opencv-contrib-python in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (4.11.0.86)
+Collecting protobuf<5,>=4.25.3 (from mediapipe)
+  Using cached protobuf-4.25.8-cp310-abi3-win_amd64.whl.metadata (541 bytes)
+Requirement already satisfied: sounddevice>=0.4.4 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (0.5.1)
+Requirement already satisfied: sentencepiece in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from mediapipe) (0.2.0)
+Requirement already satisfied: CFFI>=1.0 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from sounddevice>=0.4.4->mediapipe) (1.17.1)
+Requirement already satisfied: pycparser in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from CFFI>=1.0->sounddevice>=0.4.4->mediapipe) (2.22)
+Requirement already satisfied: ml_dtypes>=0.4.0 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from jax->mediapipe) (0.5.1)
+Requirement already satisfied: opt_einsum in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from jax->mediapipe) (3.4.0)
+Requirement already satisfied: scipy>=1.11.1 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from jax->mediapipe) (1.11.4)
+Requirement already satisfied: contourpy>=1.0.1 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (1.3.1)
+Requirement already satisfied: cycler>=0.10 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (0.12.1)
+Requirement already satisfied: fonttools>=4.22.0 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (4.56.0)
+Requirement already satisfied: kiwisolver>=1.3.1 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (1.4.8)
+Requirement already satisfied: packaging>=20.0 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (24.2)
+Requirement already satisfied: pillow>=8 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (10.1.0)
+Requirement already satisfied: pyparsing>=2.3.1 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (3.2.1)
+Requirement already satisfied: python-dateutil>=2.7 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from matplotlib->mediapipe) (2.9.0.post0)
+Requirement already satisfied: six>=1.5 in c:\users\dhruv\appdata\local\programs\python\python312\lib\site-packages (from python-dateutil>=2.7->matplotlib->mediapipe) (1.17.0)
+Using cached protobuf-4.25.8-cp310-abi3-win_amd64.whl (413 kB)
+Installing collected packages: protobuf
+  Attempting uninstall: protobuf
+    Found existing installation: protobuf 5.28.1
+    Uninstalling protobuf-5.28.1:
+      Successfully uninstalled protobuf-5.28.1
+Successfully installed protobuf-4.25.8

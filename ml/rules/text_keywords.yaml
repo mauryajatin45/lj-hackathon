@@ -1,0 +1,149 @@
+# Enhanced Keyword Rules for Scam/Phishing/“Digital Arrest” Detection
+
+threats:
+  - arrest
+  - jail
+  - gaol              # alt spelling (UK/Aus)
+  - prison
+  - warrant
+  - lawsuit
+  - legal action
+  - court
+  - police
+  - sheriff
+  - fbi
+  - cia
+  - investigation
+  - interrogation
+  - detain
+  - custody
+  - felony
+  - crime
+  - criminal record
+  - immigration hold
+  - deportation
+  - blacklisted
+  - blackmail
+  - penalty
+  - conviction
+
+OTP:
+  - otp
+  - one-time password
+  - one time password
+  - verification code
+  - confirm code
+  - security code
+  - passcode
+  - 2fa
+  - two-factor
+  - authentication code
+  - login code
+  - account code
+  - authorization code
+
+payment:
+  - pay now
+  - immediate payment
+  - transfer money
+  - wire transfer
+  - western union
+  - moneygram
+  - remit
+  - remittance
+  - bank draft
+  - account freeze
+  - settlement fee
+  - bitcoin
+  - btc
+  - cryptocurrency
+  - crypto wallet
+  - ethereum
+  - usdt
+  - gift card
+  - itunes card
+  - google play card
+  - amazon card
+  - prepaid card
+  - reloadable card
+  - voucher code
+  - money order
+  - cashier's check
+  - processing fee
+  - clearance fee
+  - service charge
+  - tax penalty
+  - customs duty
+  - outstanding balance
+
+urgency:
+  - urgent
+  - immediately
+  - right now
+  - act now
+  - respond now
+  - final notice
+  - last warning
+  - time sensitive
+  - deadline
+  - expires soon
+  - expiring
+  - act fast
+  - limited time
+  - only today
+  - within 24 hours
+  - within 48 hours
+  - resolve today
+  - avoid penalty
+  - final attempt
+  - do not ignore
+  - immediate attention
+
+legalese:
+  - subpoena
+  - summons
+  - affidavit
+  - deposition
+  - indictment
+  - prosecution
+  - compliance
+  - regulatory
+  - statutory
+  - violation
+  - penal code
+  - legal obligation
+  - binding order
+  - cease and desist
+  - injunction
+  - enforcement
+  - tribunal
+  - judicial
+  - litigation
+  - penal summons
+  - breach of law
+
+authority_impersonation:
+  - irs
+  - hmrc
+  - ssa
+  - social security administration
+  - homeland security
+  - department of justice
+  - doj
+  - uscis
+  - immigration services
+  - revenue service
+  - tax authority
+  - treasury department
+  - reserve bank
+  - central bank
+  - police department
+  - federal court
+  - high court
+  - supreme court
+  - government agency
+  - official notice
+  - bureau
+  - ministry
+  - law enforcement
+  - cyber crime unit
