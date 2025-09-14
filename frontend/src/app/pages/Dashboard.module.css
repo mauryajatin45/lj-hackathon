@@ -1,0 +1,78 @@
+/* Grid layout */
+.dashboard-grid {
+  display: grid;
+  gap: var(--spacing-lg);
+  grid-template-columns: 1fr;                    /* mobile: stack */
+  margin-bottom: var(--spacing-xl);
+}
+
+.span-all { grid-column: 1 / -1; }
+
+/* ≥992px (desktop): two equal columns for Live Updates & Recent Reports */
+@media (min-width: 992px) {
+  .dashboard-grid { grid-template-columns: 1fr 1fr; }
+  .span-all { grid-column: 1 / -1; }            /* primary card spans both */
+}
+
+/* Panels */
+.panel { display: flex; flex-direction: column; }
+
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0.25rem 0.5rem; border: 1px dashed var(--color-border);
+  border-radius: calc(var(--radius) * 0.75);
+  background: linear-gradient(0deg, rgba(0,0,0,0.02), rgba(0,0,0,0.02));
+  margin-bottom: var(--spacing-sm);
+  position: sticky; top: 0; z-index: 1;         /* sticky at top of card */
+}
+
+/* Scroll areas with comfortable heights */
+.panel-scroll {
+  max-height: 420px;
+  overflow: auto;
+  padding-right: 2px;                            /* room for scrollbar */
+}
+@media (max-width: 576px) {
+  .panel-scroll { max-height: 340px; }
+}
+
+/* Items (rows) */
+.stack-sm { display: flex; flex-direction: column; gap: var(--spacing-sm); }
+
+.item {
+  padding: var(--spacing-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background-color: var(--color-surface);
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+.item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  border-color: var(--color-primary);
+}
+.item-error {
+  background: rgba(220, 38, 38, 0.05);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+/* Links & buttons polish (no feature change) */
+.link-primary {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+.link-primary:hover { text-decoration: underline; }
+
+.elevated {
+  box-shadow: 0 8px 22px rgba(0,0,0,0.08);
+  transition: transform 120ms ease, box-shadow 120ms ease;
+}
+.elevated:hover { transform: translateY(-1px); box-shadow: 0 12px 28px rgba(0,0,0,0.12); }
+
+/* Subtle custom scrollbar (fallbacks gracefully) */
+.panel-scroll::-webkit-scrollbar { width: 8px; }
+.panel-scroll::-webkit-scrollbar-track { background: transparent; }
+.panel-scroll::-webkit-scrollbar-thumb {
+  background: rgba(127,127,127,0.35);
+  border-radius: 999px;
+}

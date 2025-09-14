@@ -59,15 +59,41 @@ const handleTextSubmission = async (req, res) => {
       channel: submission.channel
     });
 
+    // SSE: analysis started
+    sseService.sendToUser(req.user._id.toString(), 'analysis_started', {
+      submissionId: submission._id
+    });
+
     // Try AI dispatch (non-fatal to the request)
     try {
-      await aiService.analyzeText(
+      const aiResult = await aiService.analyzeText(
         submission._id.toString(),
         validated.content,
         { sender: validated.sender, subject: validated.subject, channel: validated.channel }
       );
-      submission.status = 'DISPATCHED';
+
+      // Create report
+      const report = new Report({
+        submissionId: submission._id,
+        suspicious: aiResult.is_spam,
+        riskScore: aiResult.probability,
+        reasons: aiResult.is_spam ? ['Detected as spam'] : [],
+        raw: aiResult
+      });
+      await report.save();
+
+      submission.status = 'COMPLETED';
+      submission.report = report._id;
       await submission.save();
+
+      // SSE: report ready
+      sseService.sendToUser(req.user._id.toString(), 'report_ready', {
+        submissionId: submission._id,
+        suspicious: report.suspicious,
+        riskScore: report.riskScore,
+        reasons: report.reasons
+      });
+
     } catch (aiError) {
       logger.error({ err: aiError, message: aiError?.message, stack: aiError?.stack }, 'AI dispatch error (text)');
       submission.status = 'QUEUED'; // can be retried
@@ -179,57 +205,73 @@ const handleFileSubmission = async (req, res) => {
         return res.status(500).json({ error: 'File upload failed' });
       }
 
-      /* ---- AI dispatch block (non-fatal) ---- */
-      try {
-        // Use a PRE-SIGNED URL for AI (private bucket)
-        const signedUrl = await s3Service.getAISignedUrl(attachment.key);
+      // SSE: created
+      sseService.sendToUser(req.user._id.toString(), 'submission_created', {
+        submissionId: submission._id,
+        createdAt: submission.createdAt,
+        channel: submission.channel
+      });
 
-        await aiService.analyzeFile(
-          submission._id.toString(),
-          signedUrl,
-          attachment.mimeType,
-          attachment.size,
-          { channel: validated.type }
-        );
+      // Respond immediately to client so dialog can close
+      res.status(201).json({
+        submissionId: submission._id,
+        status: submission.status
+      });
 
-        submission.status = 'DISPATCHED';
-        await submission.save();
+      // Dispatch AI analysis asynchronously (do not await)
+      (async () => {
+        try {
+          // Use a PRE-SIGNED URL for AI (private bucket)
+          const signedUrl = await s3Service.getAISignedUrl(attachment.key);
 
-        // SSE: created
-        sseService.sendToUser(req.user._id.toString(), 'submission_created', {
-          submissionId: submission._id,
-          createdAt: submission.createdAt,
-          channel: submission.channel
-        });
+          // SSE: analysis started
+          sseService.sendToUser(req.user._id.toString(), 'analysis_started', {
+            submissionId: submission._id
+          });
 
-        return res.status(201).json({
-          submissionId: submission._id,
-          status: submission.status
-        });
+          const aiResult = await aiService.analyzeFile(
+            submission._id.toString(),
+            signedUrl,
+            attachment.mimeType,
+            attachment.size,
+            { channel: validated.type }
+          );
 
-      } catch (aiErr) {
-        logger.error({ err: aiErr, message: aiErr?.message, stack: aiErr?.stack }, 'AI file analysis error');
+          // Create report
+          const report = new Report({
+            submissionId: submission._id,
+            suspicious: aiResult.suspicious,
+            riskScore: aiResult.riskScore,
+            reasons: aiResult.reasons,
+            raw: aiResult.raw
+          });
+          await report.save();
 
-        submission.status = 'QUEUED'; // queued for retry/manual re-dispatch
-        submission.lastError = aiErr?.message || 'Failed to dispatch file analysis to AI service';
-        await submission.save({ validateBeforeSave: false });
+          submission.status = 'COMPLETED';
+          submission.report = report._id;
+          await submission.save();
 
-        // Let UI know the submission exists
-        sseService.sendToUser(req.user._id.toString(), 'submission_created', {
-          submissionId: submission._id,
-          createdAt: submission.createdAt,
-          channel: submission.channel
-        });
-        sseService.sendToUser(req.user._id.toString(), 'error', {
-          submissionId: submission._id,
-          message: 'Analysis dispatch failed; queued for retry'
-        });
+          // SSE: report ready
+          sseService.sendToUser(req.user._id.toString(), 'report_ready', {
+            submissionId: submission._id,
+            suspicious: report.suspicious,
+            riskScore: report.riskScore,
+            reasons: report.reasons
+          });
 
-        return res.status(201).json({
-          submissionId: submission._id,
-          status: submission.status
-        });
-      }
+        } catch (aiErr) {
+          logger.error({ err: aiErr, message: aiErr?.message, stack: aiErr?.stack }, 'AI file analysis error');
+
+          submission.status = 'ERROR';
+          submission.lastError = aiErr?.message || 'Failed to analyze file with AI service';
+          await submission.save({ validateBeforeSave: false });
+
+          sseService.sendToUser(req.user._id.toString(), 'error', {
+            submissionId: submission._id,
+            message: 'Analysis failed'
+          });
+        }
+      })();
 
     } catch (error) {
       if (error instanceof ZodError) {
@@ -265,13 +307,7 @@ const getSubmissions = async (req, res) => {
     }
 
     const submissions = await Submission.find(filter)
-      //.populate({
-      //  path: 'report',
-      //  match: {
-      //    ...(riskMin && { riskScore: { $gte: parseFloat(riskMin) } }),
-      //    ...(riskMax && { riskScore: { $lte: parseFloat(riskMax) } })
-      //  }
-      //})
+      .populate('report')
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -351,9 +387,123 @@ const getSubmission = async (req, res) => {
   }
 };
 
+/* ---------- PROCESS DOCUMENT ---------- */
+const handleProcessDocument = async (req, res) => {
+  try {
+    const { file_url, doc_title = 'Untitled Document', doc_issuer, compact = true } = req.body;
+
+    if (!file_url) {
+      return res.status(400).json({ error: 'file_url is required' });
+    }
+
+    // Create submission
+    const submission = new Submission({
+      userId: req.user._id,
+      channel: 'document',
+      status: 'PROCESSING'
+    });
+    await submission.save();
+
+    // Call AI service
+    const aiResult = await aiService.processDocument(file_url, doc_title, doc_issuer, compact);
+
+    // Create report
+    const report = new Report({
+      submissionId: submission._id,
+      suspicious: !aiResult.legitimate,
+      riskScore: 1 - aiResult.confidence_score, // Assuming higher confidence means lower risk
+      reasons: aiResult.legitimate ? [] : ['Document verification failed'],
+      raw: aiResult
+    });
+    await report.save();
+
+    // Update submission
+    submission.status = 'COMPLETED';
+    submission.report = report._id;
+    await submission.save();
+
+    // SSE: report ready
+    sseService.sendToUser(req.user._id.toString(), 'report_ready', {
+      submissionId: submission._id,
+      suspicious: report.suspicious,
+      riskScore: report.riskScore,
+      reasons: report.reasons
+    });
+
+    return res.json(aiResult);
+
+  } catch (error) {
+    logger.error({ err: error, message: error?.message, stack: error?.stack }, 'Process document error');
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/* ---------- DETECT SPAM ---------- */
+const handleDetectSpam = async (req, res) => {
+  try {
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'text is required' });
+    }
+
+    // Create submission
+    const submission = new Submission({
+      userId: req.user._id,
+      channel: 'text',
+      contentText: text,
+      status: 'PROCESSING'
+    });
+    await submission.save();
+    console.log('Submission created:', submission._id);
+
+    // SSE: analysis started
+    sseService.sendToUser(req.user._id.toString(), 'analysis_started', {
+      submissionId: submission._id
+    });
+
+    // Call AI service with submission._id as reference_id
+    const aiResult = await aiService.detectSpam(text, submission._id.toString());
+    console.log('AI result:', aiResult);
+
+    // Create report
+    const report = new Report({
+      submissionId: submission._id,
+      suspicious: aiResult.is_spam,
+      riskScore: aiResult.probability,
+      reasons: aiResult.is_spam ? ['Detected as spam'] : [],
+      raw: aiResult
+    });
+    await report.save();
+    console.log('Report created:', report._id);
+
+    // Update submission
+    submission.status = 'COMPLETED';
+    submission.report = report._id;
+    await submission.save();
+    console.log('Submission updated:', submission._id);
+
+    // SSE: report ready
+    sseService.sendToUser(req.user._id.toString(), 'report_ready', {
+      submissionId: submission._id,
+      suspicious: report.suspicious,
+      riskScore: report.riskScore,
+      reasons: report.reasons
+    });
+
+    return res.json(aiResult);
+
+  } catch (error) {
+    logger.error({ err: error, message: error?.message, stack: error?.stack }, 'Detect spam error');
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 module.exports = {
   handleTextSubmission,
   handleFileSubmission,
   getSubmissions,
-  getSubmission
+  getSubmission,
+  handleProcessDocument,
+  handleDetectSpam
 };

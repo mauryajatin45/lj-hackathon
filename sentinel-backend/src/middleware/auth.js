@@ -5,13 +5,19 @@ const { logger } = require('../config/logger');
 
 const authMiddleware = async (req, res, next) => {
   try {
+    let token;
+
     const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Authorization token required' });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.query.token) {
+      // Allow token in query params for SSE connections
+      token = req.query.token;
     }
 
-    const token = authHeader.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authorization token required' });
+    }
     
     try {
       const decoded = jwt.verify(token, JWT_SECRET);

@@ -1,5 +1,5 @@
-const SSE_URL = import.meta.env.VITE_SSE_URL || 'http://localhost:4000/api/sse/reports'
-const MOCK_MODE = import.meta.env.VITE_MOCK === 'true'
+const SSE_URL = import.meta.env.VITE_SSE_URL || 'http://localhost:4000/api/sse'
+const MOCK_MODE = false
 
 export class SSEConnection {
   constructor() {
@@ -27,8 +27,7 @@ export class SSEConnection {
     }
 
     this.isConnecting = true
-    // Always use mock connection now
-    this.startMockConnection()
+    this.startRealConnection(token)
   }
 
   disconnect() {
@@ -77,6 +76,36 @@ export class SSEConnection {
     this.mockInterval = setInterval(() => {
       this.generateMockEvents()
     }, 10000) // Check every 10 seconds to reduce load
+  }
+
+  startRealConnection(token) {
+    console.log('Starting real SSE connection')
+    const url = `${SSE_URL}?token=${encodeURIComponent(token)}`
+    this.eventSource = new EventSource(url)
+
+    this.eventSource.onopen = () => {
+      console.log('SSE connection opened')
+      this.isConnected = true
+      this.isConnecting = false
+      this.reconnectAttempts = 0
+      this.emit('connection', { status: 'connected' })
+    }
+
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data)
+        this.emit(event.type, data)
+      } catch (error) {
+        console.error('Error parsing SSE message:', error)
+      }
+    }
+
+    this.eventSource.onerror = (error) => {
+      console.error('SSE connection error:', error)
+      this.isConnected = false
+      this.emit('connection', { status: 'error' })
+      this.handleReconnect(token)
+    }
   }
 
   generateMockEvents() {

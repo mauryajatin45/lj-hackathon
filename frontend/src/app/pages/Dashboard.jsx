@@ -10,7 +10,7 @@ import FileSubmitDialog from '../../components/FileSubmitDialog.jsx'
 import SSEStatusPill from '../../components/SSEStatusPill.jsx'
 import RiskBadge from '../../components/RiskBadge.jsx'
 import { sseConnection } from '../../api/sse.js'
-import { submitText, submitFile } from '../../api/submissions.js'
+import { submitText, submitFile, getSubmissions } from '../../api/submissions.js'
 import { formatDate } from '../../utils/format.js'
 
 export default function Dashboard() {
@@ -23,7 +23,26 @@ export default function Dashboard() {
   const [liveUpdates, setLiveUpdates] = useState([])
   const [recentReports, setRecentReports] = useState([])
 
+  const loadRecentReports = async () => {
+    try {
+      const result = await getSubmissions({ limit: 5 })
+      const reports = result.submissions
+        .filter(s => s.report)
+        .map(s => ({
+          id: s._id,
+          timestamp: s.createdAt,
+          riskScore: s.report.riskScore,
+          suspicious: s.report.suspicious,
+          reasons: s.report.reasons
+        }))
+      setRecentReports(reports)
+    } catch (error) {
+      console.error('Failed to load recent reports:', error)
+    }
+  }
+
   useEffect(() => {
+    loadRecentReports()
     let hasShownConnectionToast = false
 
     // Connect to SSE only if not already connected
@@ -100,7 +119,11 @@ export default function Dashboard() {
         return updated.slice(0, 5) // Keep only latest 5
       })
 
-      toast.success(`Report ready • Risk ${(data.riskScore * 100).toFixed(0)}% (${riskLevel})`)
+      if (data.suspicious) {
+        toast.warning(`Suspicious content detected! Risk ${(data.riskScore * 100).toFixed(0)}% (${riskLevel})`)
+      } else {
+        toast.success(`Report ready • Risk ${(data.riskScore * 100).toFixed(0)}% (${riskLevel})`)
+      }
     })
 
     sseConnection.on('error', (data) => {
@@ -159,10 +182,10 @@ export default function Dashboard() {
         display: 'grid', 
         gap: 'var(--spacing-lg)',
         gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-        marginBottom: 'var(--spacing-xl)'
+        marginBottom: 'var(--spacing-xl)',
       }}>
         {/* Primary Action */}
-        <Card title="Submit for Analysis" style={{ gridColumn: '1 / -1' }}>
+        <Card title="Submit for Analysis" style={{ gridColumn: '1 / -1', height:'50vh' }}>
           <div className="text-center">
             <p className="text-muted mb-4">
               Submit suspicious content for automated security analysis

@@ -53,6 +53,6 @@ app.use('*', (req, res) => {
 });
 
 // Start SSE heartbeat
-sseService.startHeartbeat();
+sseService.startHeartbeat(5000);
 
 module.exports = app;

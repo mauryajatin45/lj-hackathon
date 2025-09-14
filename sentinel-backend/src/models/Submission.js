@@ -51,7 +51,7 @@ const submissionSchema = new mongoose.Schema({
   attachments: [attachmentSchema],
   status: {
     type: String,
-    enum: ['SUBMITTED', 'UPLOADING', 'UPLOADED', 'DISPATCHED', 'ANALYSIS_STARTED', 'REPORT_READY', 'ERROR'],
+    enum: ['SUBMITTED', 'UPLOADING', 'UPLOADED', 'DISPATCHED', 'ANALYSIS_STARTED', 'REPORT_READY', 'ERROR', 'COMPLETED', 'QUEUED'],
     default: 'SUBMITTED'
   },
   lastError: {

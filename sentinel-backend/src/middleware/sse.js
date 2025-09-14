@@ -12,7 +12,7 @@ const sseMiddleware = (req, res, next) => {
   res.flushHeaders();
 
   // Send initial connection message
-  res.write('event: connected\ndata: {}\n\n');
+  res.write('event: connection\ndata: {"status": "connected"}\n\n');
 
   // Add heartbeat function to response
   res.heartbeat = () => {

@@ -3,14 +3,18 @@ const { logger } = require('../config/logger');
 
 const handleSSEConnection = (req, res) => {
   try {
+    // Set SSE headers
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
     res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-    
+
+    // Flush headers
+    res.flushHeaders();
+
     // Send initial connection message
-    res.write(': connected\n\n');
+    res.write('event: connection\ndata: {"status": "connected"}\n\n');
 
     // Add client to SSE service
     sseService.addClient(req.user._id.toString(), res);
