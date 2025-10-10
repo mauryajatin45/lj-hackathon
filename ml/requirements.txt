@@ -1,0 +1,11 @@
+boto3
+fastapi
+uvicorn
+pydantic
+python-multipart
+joblib
+torch
+torchvision
+pillow
+pdf2image
+PyMuPDF
