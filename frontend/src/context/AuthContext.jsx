@@ -9,6 +9,7 @@ export function AuthProvider({ children }) {
     try { return JSON.parse(localStorage.getItem('sentinel_auth')) || null; }
     catch { return null; }
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (auth) localStorage.setItem('sentinel_auth', JSON.stringify(auth));
@@ -16,6 +17,7 @@ export function AuthProvider({ children }) {
   }, [auth]);
 
   const login = async (email, password) => {
+    setLoading(true);
     try {
       const data = await authApi.login({ email, password });
       setAuth({ token: data.token, user: data.user });
@@ -33,6 +35,8 @@ export function AuthProvider({ children }) {
       // 401 invalid credentials
       if (e.status === 401) return { success: false, error: 'Invalid email or password.' };
       return { success: false, error: e.message || 'Login failed.' };
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -59,8 +63,9 @@ export function AuthProvider({ children }) {
     user: auth?.user || null,
     token: auth?.token || null,
     isAuthenticated: !!auth?.token,
+    loading,
     login, register, logout
-  }), [auth]);
+  }), [auth, loading]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

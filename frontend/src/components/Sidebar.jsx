@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 
 // Inline SVG icons (clean + scalable)
@@ -19,21 +19,21 @@ const IconSettings = (props) => (
 )
 
 const NAV = [
-  { 
-    path: '/', 
-    label: 'Dashboard', 
+  {
+    path: '/app/dashboard',
+    label: 'Dashboard',
     Icon: IconDashboard,
     description: 'Overview and analytics'
   },
-  { 
-    path: '/history', 
-    label: 'History', 
+  {
+    path: '/app/history',
+    label: 'History',
     Icon: IconHistory,
     description: 'View past submissions'
   },
-  { 
-    path: '/settings', 
-    label: 'Settings', 
+  {
+    path: '/app/settings',
+    label: 'Settings',
     Icon: IconSettings,
     description: 'Account preferences'
   }

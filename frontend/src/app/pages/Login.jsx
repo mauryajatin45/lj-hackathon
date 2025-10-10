@@ -7,8 +7,7 @@ import { isValidEmail } from '../../utils/format.js';
 export default function Login() {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loading } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -35,12 +34,11 @@ export default function Login() {
       return;
     }
 
-    setIsLoading(true);
     setErrors({});
     const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      navigate('/', { replace: true });
+      navigate('/app/dashboard', { replace: true });
     } else {
       if (result.field) {
         setErrors((prev) => ({ ...prev, [result.field]: result.error }));
@@ -48,8 +46,6 @@ export default function Login() {
         setErrors((prev) => ({ ...prev, submit: result.error || 'Login failed. Please try again.' }));
       }
     }
-
-    setIsLoading(false);
   };
 
   return (
@@ -79,7 +75,7 @@ export default function Login() {
             type="email" id="email" name="email"
             value={formData.email} onChange={handleChange}
             className="form-input" placeholder="Enter your email address"
-            disabled={isLoading}
+            disabled={loading}
           />
           {errors.email && <div className="form-error">{errors.email}</div>}
         </div>
@@ -90,25 +86,25 @@ export default function Login() {
             type="password" id="password" name="password"
             value={formData.password} onChange={handleChange}
             className="form-input" placeholder="Enter your password"
-            disabled={isLoading}
+            disabled={loading}
           />
           {errors.password && <div className="form-error">{errors.password}</div>}
         </div>
 
         {errors.submit && <div className="form-error mb-4">{errors.submit}</div>}
 
-        <Button 
-          type="submit" 
-          className="btn-primary btn-lg" 
-          style={{ 
-            width: '100%', 
+        <Button
+          type="submit"
+          className="btn-primary btn-lg"
+          style={{
+            width: '100%',
             marginTop: 'var(--spacing-lg)',
             fontSize: 'var(--font-size-lg)',
             padding: 'var(--spacing-lg) var(--spacing-xl)'
-          }} 
-          disabled={isLoading}
+          }}
+          disabled={loading}
         >
-          {isLoading ? (
+          {loading ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-sm)' }}>
               <div style={{
                 width: '16px',

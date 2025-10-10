@@ -12,39 +12,31 @@ import History from './app/pages/History.jsx';
 import Settings from './app/pages/Settings.jsx';
 import SubmissionDetail from './app/pages/SubmissionDetail.jsx';
 
+// ⬇️ Import your new HomePage
+import HomePage from './app/pages/HomePage.jsx';
+
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
-  }
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
+  if (!user) return <Navigate to="/login" replace />;
   return children;
 }
-ProtectedRoute.propTypes = {
-  children: PropTypes.node,
-};
+ProtectedRoute.propTypes = { children: PropTypes.node };
 
 function PublicRoute({ children }) {
   const { user, loading } = useAuth();
-
-  if (loading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
-  }
-  if (user) {
-    return <Navigate to="/" replace />;
-  }
+  if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>;
+  if (user) return <Navigate to="/app/dashboard" replace />;
   return children;
 }
-PublicRoute.propTypes = {
-  children: PropTypes.node,
-};
+PublicRoute.propTypes = { children: PropTypes.node };
 
 export default function App() {
   return (
     <Routes>
+      {/* 🏠 Public Home Page */}
+      <Route path="/" element={<HomePage />} />
+
       {/* Public routes */}
       <Route
         path="/login"
@@ -67,9 +59,9 @@ export default function App() {
         }
       />
 
-      {/* Protected app layout (renders children via <Outlet /> in AppLayout) */}
+      {/* Protected routes (after login) */}
       <Route
-        path="/"
+        path="/app"
         element={
           <ProtectedRoute>
             <AppLayout />
@@ -77,12 +69,13 @@ export default function App() {
         }
       >
         <Route index element={<Dashboard />} />
+        <Route path="dashboard" element={<Dashboard />} />
         <Route path="history" element={<History />} />
         <Route path="settings" element={<Settings />} />
         <Route path="submissions/:id" element={<SubmissionDetail />} />
       </Route>
 
-      {/* Fallback to home */}
+      {/* Fallback */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
